@@ -1,0 +1,53 @@
+CREATE TEMPORARY TABLE sls_input (
+    stock_code text,
+    company text,
+    time timestamp with time zone NOT NULL,
+    author text,
+    commnets text,
+    read text,
+    comment text,
+    score text,
+    url text
+) 
+WITH (
+    'connector' = 'sls', 
+    'project' = '<yourSlsProject>',
+    'endPoint' = '<yourSlsEndpoint>', 
+    'logStore' = '<openSlsLogstore>', 
+    'accessId' = '****', 
+    'accessKey' = '****', 
+    'batchGetSize' = '500'
+);
+
+CREATE TEMPORARY TABLE hologres_sink (
+    stock_code text,
+    company text,
+    time timestamp with time zone NOT NULL,
+    author text,
+    commnets text,
+    read text,
+    comment text,
+    score text,
+    url text
+) 
+WITH (
+    'connector' = 'hologres',
+    'dbname' = 'hologres_dataset_5214', --Hologres的数据库名称
+    'tablename' = 'hologres_dataset_5214.hologres_5214', --Hologres用于接收数据的表名称
+    'username' = 'access id', 
+    'password' = 'access key', 
+    'endpoint' = 'holo vpc endpoint',
+    'jdbcretrycount' = '1', 
+    'partitionrouter' = 'true', 
+    'createparttable' = 'true', 
+    'mutatetype' = 'insertorignore' 
+);
+
+INSERT INTO hologres_sink
+    SELECT 
+        * 
+    FROM
+        sls_input 
+    WHERE
+        id IS NOT NULL 
+            AND time_ts IS NOT NULL;

@@ -1,0 +1,36 @@
+-- 新建schema用于创建内表并导入数据
+CREATE SCHEMA IF NOT EXISTS hologres_dataset_5214;
+
+DROP TABLE IF EXISTS hologres_dataset_5214.hologres_5214;
+
+BEGIN;
+CREATE TABLE hologres_dataset_5214.hologres_5214 (
+    stock_code text,
+    company text,
+    time timestamp with time zone NOT NULL,
+    author text,
+    commnets text,
+    read text,
+    comment text,
+    score text,
+    url text
+);
+CALL set_table_property ('hologres_dataset_5214.hologres_5214', 'distribution_key', 'id');
+CALL set_table_property ('hologres_dataset_github_event.hologres_github_event', 'event_time_column', 'time');
+CALL set_table_property ('hologres_dataset_github_event.hologres_github_event', 'clustering_key', 'time');
+
+COMMIT;
+
+
+SELECT
+    comments,
+    COUNT(*) AS events
+FROM
+    hologres_dataset_5214.hologres_5214
+WHERE
+    time >= CURRENT_DATE
+GROUP BY
+    company
+ORDER BY
+    events DESC
+LIMIT 5;
